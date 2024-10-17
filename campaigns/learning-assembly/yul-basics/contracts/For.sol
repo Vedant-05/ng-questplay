@@ -14,6 +14,23 @@ contract For {
     {
         assembly {
 
+           
+
+            for  {let i:= beg} lt(i,end) {i := add(i,1)}  {
+                 
+                 if iszero(mod(i,5)) {
+                     continue
+                 }
+
+                 if iszero(mod(end,i)) {
+                    break
+                 }
+
+                 sum := add(sum, i)
+                 
+            }
+
+
         }
     }
 }
