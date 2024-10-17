@@ -6,7 +6,7 @@ contract Comparisons {
     /// @notice Returns value == 0.
     function isZero(int256 value) public pure returns (bool isZero_) {
         assembly {
-
+             isZero_ := iszero(value)
         }
     }
 
@@ -17,7 +17,7 @@ contract Comparisons {
         returns (bool greater)
     {
         assembly {
-
+            greater := gt(lhs, rhs)
         }
     }
 
@@ -27,7 +27,7 @@ contract Comparisons {
         int256 rhs
     ) public pure returns (bool lower) {
         assembly {
-
+            lower := slt(lhs, rhs)
         }
     }
 
@@ -36,7 +36,7 @@ contract Comparisons {
         int256 value
     ) public pure returns (bool negativeOrEqualTen) {
         assembly {
-
+           negativeOrEqualTen :=  or(slt(value,0), eq(value,10))
         }
     }
 
@@ -47,7 +47,7 @@ contract Comparisons {
         int256 upper
     ) public pure returns (bool inRange) {
         assembly {
-
+            inRange := and(sgt(value, sub(lower, 1)), slt(value, add(upper,1)))  
         }
     }
 }
