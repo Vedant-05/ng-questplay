@@ -42,12 +42,32 @@ contract SafeMath {
     /// @dev Reverts on overflow / underflow.
     function mul(int256 lhs, int256 rhs) public pure returns (int256 result) {
         // Convert this to assembly
-        assembly {
+         assembly {
+            // Perform the multiplication
             result := mul(lhs, rhs)
-            // Check overflow: result != 0 && result / lhs != rhs
+
+            // Check for overflow
+            // Case 1: If either input is 0, the result must be 0
+            // Case 2: If the result divided by lhs is not equal to rhs, there was an overflow
+            // Case 3: Special check for INT256_MIN * -1
+            if or(
+                or(
+                    and(iszero(iszero(result)), iszero(eq(sdiv(result, lhs), rhs))),
+                    and(eq(lhs, 0x8000000000000000000000000000000000000000000000000000000000000000), eq(rhs, sub(0, 1)))
+                ),
+                and(eq(rhs, 0x8000000000000000000000000000000000000000000000000000000000000000), eq(lhs, sub(0, 1)))
+            ) {
+                revert(0, 0)
+            }
+
+            // Handle the case where the result is INT256_MIN
+            // This is valid only if one of the inputs is -1 and the other is INT256_MIN
             if and(
-                iszero(iszero(result)),
-                iszero(eq(sdiv(result, lhs), rhs))
+                eq(result, 0x8000000000000000000000000000000000000000000000000000000000000000),
+                iszero(or(
+                    and(eq(lhs, 0x8000000000000000000000000000000000000000000000000000000000000000), eq(rhs, sub(0, 1))),
+                    and(eq(rhs, 0x8000000000000000000000000000000000000000000000000000000000000000), eq(lhs, sub(0, 1)))
+                ))
             ) {
                 revert(0, 0)
             }
