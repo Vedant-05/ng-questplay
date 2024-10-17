@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 contract Challenge {
 
-    uint256  immutable _SKIP;
+    uint256 immutable _SKIP;
 
     constructor(uint256 skip) {
         _SKIP = skip;
@@ -14,10 +14,10 @@ contract Challenge {
      * @param array The array to sum.
      * @return sum The sum of all the elements of the array excluding SKIP.
      */
+
     function sumAllExceptSkip(
         uint256[] calldata array
     ) public view returns (uint256) {
-
         uint256 sum;
         uint256 skip = _SKIP;
         uint256 len = array.length;
@@ -29,9 +29,9 @@ contract Challenge {
                 let element := calldataload(add(dataStart, mul(i, 0x20)))
                 let shouldAdd := iszero(eq(element, skip))
                 
-                // Check for overflow before adding
+              
                 if and(shouldAdd, gt(element, sub(not(0), sum))) {
-                    // Revert with "arithmetic overflow" message
+                   
                     mstore(0x00, 0x4e487b7100000000000000000000000000000000000000000000000000000000)
                     mstore(0x04, 0x11)
                     revert(0, 0x24)
@@ -43,5 +43,7 @@ contract Challenge {
         }
 
         return sum;
+    
     }
+
 }
