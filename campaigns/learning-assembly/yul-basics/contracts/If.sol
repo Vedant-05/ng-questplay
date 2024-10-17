@@ -13,7 +13,12 @@ contract If {
         returns (uint256 _hours)
     {
         assembly {
-
+            
+            if or(slt(_minutes, 0), mod(_minutes, 60)) {
+                 revert(0,0)
+                
+            }
+            _hours := sdiv(_minutes, 60)
         }
     }
 }
