@@ -47,7 +47,7 @@ contract Comparisons {
         int256 upper
     ) public pure returns (bool inRange) {
         assembly {
-            inRange := and(sgt(value, sub(lower, 1)), slt(value, add(upper,1)))  
+            inRange := and(or(sgt(value, lower),eq(value,lower)), or(slt(value, upper),eq(value,upper))) 
         }
     }
 }
