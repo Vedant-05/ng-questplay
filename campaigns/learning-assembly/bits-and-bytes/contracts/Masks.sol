@@ -10,7 +10,8 @@ contract Masks {
         returns (uint256 rvalue)
     {
         assembly {
-            
+            x := or(x,mask)
+            rvalue := x
         }
     }
 
@@ -21,6 +22,9 @@ contract Masks {
         returns (uint256 rvalue)
     {
         assembly {
+            mask := not(mask)
+            x := and(x,mask)
+            rvalue := x
             
         }
     }
@@ -34,6 +38,15 @@ contract Masks {
         returns (uint64 rvalue)
     {
         assembly {
+          // Shift x right by (at * 8) bits
+        // This aligns the desired 8-byte chunk to the least significant bytes
+        let shifted := shr(mul(at, 8), x)
+        
+        // Mask out all but the least significant 8 bytes (64 bits)
+        // 0xffffffffffffffff is a mask with 64 bits set to 1
+        
+        rvalue := and(shifted, 0xffffffffffffffff)
+
             
         }
     }
