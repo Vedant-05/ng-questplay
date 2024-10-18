@@ -52,10 +52,18 @@ contract MemoryLayout {
             // Update free memory pointer
             mstore(0x40, add(memPtr, totalSize))
             
-            // Initialize array elements
+            // Initialize array elements (left-aligned)
             let dataPtr := add(memPtr, 0x20)
-            for { let i := 0 } lt(i, size) { i := add(i, 1) } {
-                mstore8(add(dataPtr, i), value)
+            let word := 0
+            let bytesLeft := size
+            for { let i := 0 } lt(i, totalSize) { i := add(i, 0x20) } {
+                if iszero(bytesLeft) { break }
+                word := 0
+                for { let j := 0 } and(lt(j, 0x20), gt(bytesLeft, 0)) { j := add(j, 1) } {
+                    word := or(shl(248, value), shr(8, word))
+                    bytesLeft := sub(bytesLeft, 1)
+                }
+                mstore(add(dataPtr, i), word)
             }
         }
     }
