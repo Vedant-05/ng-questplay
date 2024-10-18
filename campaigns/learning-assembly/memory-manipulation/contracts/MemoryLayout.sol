@@ -47,7 +47,7 @@ contract MemoryLayout {
             mstore(memPtr, size)
             
             // Calculate total size (32 bytes for length + actual data size, rounded up to nearest 32 bytes)
-            let totalSize := add(0x20, mul(div(add(size, 31), 32), 32))
+            let totalSize := and(add(add(size, 0x20), 0x1f), not(0x1f))
             
             // Update free memory pointer
             mstore(0x40, add(memPtr, totalSize))
