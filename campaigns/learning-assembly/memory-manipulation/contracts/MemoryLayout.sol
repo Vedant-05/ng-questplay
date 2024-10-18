@@ -40,14 +40,13 @@ contract MemoryLayout {
     ) public pure returns (bytes memory array) {
         assembly {
             // Allocate memory for the array
-            // Array length (32 bytes) + size bytes + padding to 32-byte boundary
             let memPtr := mload(0x40)
             array := memPtr
             
-            // Store the length of the array
+            // Store the length of the array (in bytes)
             mstore(memPtr, size)
             
-            // Calculate total size (rounded up to nearest 32 bytes)
+            // Calculate total size (32 bytes for length + actual data size, rounded up to nearest 32 bytes)
             let totalSize := add(0x20, mul(div(add(size, 31), 32), 32))
             
             // Update free memory pointer
@@ -56,8 +55,7 @@ contract MemoryLayout {
             // Initialize array elements
             let dataPtr := add(memPtr, 0x20)
             for { let i := 0 } lt(i, size) { i := add(i, 1) } {
-                mstore8(dataPtr, value)
-                dataPtr := add(dataPtr, 1)
+                mstore8(add(dataPtr, i), value)
             }
         }
     }
