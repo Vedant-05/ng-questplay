@@ -33,27 +33,25 @@ contract MemoryLayout {
         uint256 size, 
         bytes1 value
     ) public pure returns (bytes memory array) {
-        assembly {
-     
-// Allocate memory and log
-    array := mload(0x40)
-    mstore(0x40, add(array, 0x60)) // Log after allocating
+     assembly {
+        // 1. Allocate memory for the array
+        array := mload(0x40)
 
-    // Check if memory properly allocated
-       if iszero(array) { revert(0, 0) }
-        // Set data pointer after the length
+        // 2. Set the length of the array (first 32 bytes)
+        mstore(array, size)
+        
+        // 3. Set data pointer after the length (next 32 bytes)
         let dataPtr := add(array, 0x20)
         
-        // Initialize array elements
+        // 4. Initialize array elements with the value (1 byte per element)
         for { let i := 0 } lt(i, size) { i := add(i, 1) } {
             mstore8(dataPtr, value)
             dataPtr := add(dataPtr, 1)
         }
-
-       let totalSize := add(0x20, mul(0x20, div(add(size, 31), 32)))
-       mstore(0x40, add(array, totalSize))
-
-    
-        }
+        
+        // 5. Align memory and update the free memory pointer
+        let totalSize := add(0x20, and(add(size, 31), not(31))) // Align to 32-byte boundary
+        mstore(0x40, add(array, totalSize))
+    }
     }
 }
