@@ -16,7 +16,7 @@
         },
         "createBytesArray": {
             "size": 1,
-            "value": 0
+            "value": "0x30"
         }
     }
 ]
