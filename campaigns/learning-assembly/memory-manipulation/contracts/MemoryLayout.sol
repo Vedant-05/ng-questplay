@@ -11,18 +11,23 @@ contract MemoryLayout {
         uint256 value
     ) public pure returns (uint256[] memory array) {
         assembly {
-            // 1. Read start of free memory
-            array := mload(0x40)
-            // 2. Record the length of the array
-            mstore(array, size)
-            // 3. Initialize array elements
-            let dataPtr := add(array, 0x20)
+            // Allocate memory for the array
+            // Array length (32 bytes) + size * 32 bytes (each uint256 is 32 bytes)
+            let memPtr := mload(0x40)
+            array := memPtr
+            
+            // Store the length of the array
+            mstore(memPtr, size)
+            
+            // Update free memory pointer
+            mstore(0x40, add(memPtr, add(0x20, mul(size, 0x20))))
+            
+            // Initialize array elements
+            let dataPtr := add(memPtr, 0x20)
             for { let i := 0 } lt(i, size) { i := add(i, 1) } {
                 mstore(dataPtr, value)
                 dataPtr := add(dataPtr, 0x20)
             }
-            // 4. Mark the array memory area as allocated
-            mstore(0x40, dataPtr)
         }
     }
 
@@ -32,28 +37,28 @@ contract MemoryLayout {
     function createBytesArray(
         uint256 size, 
         bytes1 value
-    ) public pure returns (bytes memory) {
-         assembly {
-            // Allocate memory for the bytes array
-            let ptr := mload(0x40)
+    ) public pure returns (bytes memory array) {
+        assembly {
+            // Allocate memory for the array
+            // Array length (32 bytes) + size bytes + padding to 32-byte boundary
+            let memPtr := mload(0x40)
+            array := memPtr
             
-            // Store the length of the bytes array
-            mstore(ptr, size)
+            // Store the length of the array
+            mstore(memPtr, size)
             
-            // Calculate the total size including padding
-            let totalSize := add(add(size, 0x20), mod(sub(32, mod(size, 32)), 32))
+            // Calculate total size (rounded up to nearest 32 bytes)
+            let totalSize := add(0x20, mul(div(add(size, 31), 32), 32))
             
-            // Update the free memory pointer
-            mstore(0x40, add(ptr, totalSize))
+            // Update free memory pointer
+            mstore(0x40, add(memPtr, totalSize))
             
-            // Fill the array with the value
-            let dataPtr := add(ptr, 0x20)
+            // Initialize array elements
+            let dataPtr := add(memPtr, 0x20)
             for { let i := 0 } lt(i, size) { i := add(i, 1) } {
-                mstore8(add(dataPtr, i), value)
+                mstore8(dataPtr, value)
+                dataPtr := add(dataPtr, 1)
             }
-            
-            // Return the pointer to the bytes array
-            return(ptr, totalSize)
         }
     }
 }
