@@ -10,9 +10,8 @@ contract DynamicArray {
         uint256[] memory array, 
         uint256 value
     ) public pure returns (uint256[] memory array_) {
-        uint256 length = array.length + 1;
-
         assembly {
+            let length := add(mload(array), 1)
             let memptr := mload(0x40)
             array_ := memptr
 
