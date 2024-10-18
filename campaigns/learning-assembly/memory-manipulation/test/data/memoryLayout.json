@@ -15,8 +15,8 @@
             "value": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         },
         "createBytesArray": {
-            "size": 1,
-            "value": "0x30"
+            "size": 0,
+            "value": 255
         }
     }
 ]

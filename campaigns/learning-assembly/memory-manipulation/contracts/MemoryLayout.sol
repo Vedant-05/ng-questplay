@@ -34,40 +34,29 @@ contract MemoryLayout {
         bytes1 value
     ) public pure returns (bytes memory array) {
          bytes memory array = new bytes(size);
-        for (uint i = 0; i < size; i++) {
-            array[i] = value;
+        
+        assembly {
+            // Get the pointer to the start of the array data
+            let dataPtr := add(array, 0x20)
+            
+            // Fill the array with the value
+            for { let i := 0 } lt(i, size) { i := add(i, 1) } {
+                mstore8(add(dataPtr, i), value)
+            }
+            
+            // Ensure proper memory alignment
+            let endPtr := add(dataPtr, size)
+            let remainder := mod(size, 32)
+            if gt(remainder, 0) {
+                let padding := sub(32, remainder)
+                mstore(endPtr, 0)
+                endPtr := add(endPtr, padding)
+            }
+            
+            // Update free memory pointer
+            mstore(0x40, endPtr)
         }
+        
         return array;
-    //  assembly {
-    //     // 1. Allocate memory for the array
-    //         array := mload(0x40)
-            
-    //         // 2. Store the length of the array
-    //         mstore(array, size)
-            
-    //         // 3. Calculate the number of words needed (rounded up)
-    //         let words := div(add(size, 31), 32)
-            
-    //         // 4. Calculate total size in memory (1 word for length + data words)
-    //         let totalSize := mul(add(words, 1), 32)
-            
-    //         // 5. Initialize array elements
-    //         let dataPtr := add(array, 32)
-    //         for { let i := 0 } lt(i, size) { i := add(i, 1) } {
-    //             mstore8(add(dataPtr, i), value)
-    //         }
-            
-    //         // 6. Clear any remaining bytes in the last word
-    //         let lastWordPtr := add(dataPtr, size)
-    //         let remainingBytes := sub(totalSize, add(size, 32))
-    //         if gt(remainingBytes, 0) {
-    //             mstore(lastWordPtr, 0)
-    //         }
-
-    //     //    totalSize := and(add(add(size, 0x20), 0x1f), not(0x1f))
-            
-    //         // 7. Update the free memory pointer
-    //         mstore(0x40, add(array, totalSize))
-    // }
     }
 }
