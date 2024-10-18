@@ -34,24 +34,28 @@ contract MemoryLayout {
         bytes1 value
     ) public pure returns (bytes memory array) {
      assembly {
-        // 1. Allocate memory for the array
-        array := mload(0x40)
+      // Calculate total size (including padding)
+            let totalSize := add(0x20, size) // 0x20 (32 bytes) for length + size
+            let remainder := mod(size, 0x20)
+            if gt(remainder, 0) {
+                totalSize := add(totalSize, sub(0x20, remainder))
+            }
 
-        // 2. Set the length of the array (first 32 bytes)
-        mstore(array, size)
-        
-        // 3. Set data pointer after the length (next 32 bytes)
-        let dataPtr := add(array, 0x20)
-        
-        // 4. Initialize array elements with the value (1 byte per element)
-        for { let i := 0 } lt(i, size) { i := add(i, 1) } {
-            mstore8(dataPtr, value)
-            dataPtr := add(dataPtr, 1)
-        }
-        
-        // 5. Align memory and update the free memory pointer
-        let totalSize := add(0x20, and(add(size, 31), not(31))) // Align to 32-byte boundary
-        mstore(0x40, add(array, totalSize))
+            // Allocate memory for the array
+            array := mload(0x40)
+
+            // Set the length of the array (first 32 bytes)
+            mstore(array, size)
+            
+            // Initialize array elements with the value (1 byte per element)
+            let dataPtr := add(array, 0x20)
+            let end := add(dataPtr, size)
+            for {} lt(dataPtr, end) { dataPtr := add(dataPtr, 1) } {
+                mstore8(dataPtr, value)
+            }
+            
+            // Update the free memory pointer
+            mstore(0x40, add(array, totalSize))
     }
     }
 }
