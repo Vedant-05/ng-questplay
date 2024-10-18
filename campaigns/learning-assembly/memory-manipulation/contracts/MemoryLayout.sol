@@ -32,31 +32,28 @@ contract MemoryLayout {
     function createBytesArray(
         uint256 size, 
         bytes1 value
-    ) public pure returns (bytes memory array) {
-         bytes memory array = new bytes(size);
-        
-        assembly {
-            // Get the pointer to the start of the array data
-            let dataPtr := add(array, 0x20)
+    ) public pure returns (bytes memory) {
+         assembly {
+            // Allocate memory for the bytes array
+            let ptr := mload(0x40)
+            
+            // Store the length of the bytes array
+            mstore(ptr, size)
+            
+            // Calculate the total size including padding
+            let totalSize := add(add(size, 0x20), mod(sub(32, mod(size, 32)), 32))
+            
+            // Update the free memory pointer
+            mstore(0x40, add(ptr, totalSize))
             
             // Fill the array with the value
+            let dataPtr := add(ptr, 0x20)
             for { let i := 0 } lt(i, size) { i := add(i, 1) } {
                 mstore8(add(dataPtr, i), value)
             }
             
-            // Ensure proper memory alignment
-            let endPtr := add(dataPtr, size)
-            let remainder := mod(size, 32)
-            if gt(remainder, 0) {
-                let padding := sub(32, remainder)
-                mstore(endPtr, 0)
-                endPtr := add(endPtr, padding)
-            }
-            
-            // Update free memory pointer
-            mstore(0x40, endPtr)
+            // Return the pointer to the bytes array
+            return(ptr, totalSize)
         }
-        
-        return array;
     }
 }
