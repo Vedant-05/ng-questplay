@@ -11,7 +11,23 @@ contract MemoryLayout {
         uint256 value
     ) public pure returns (uint256[] memory array) {
         assembly {
-
+            // Allocate memory for the array
+            // Array length (32 bytes) + size * 32 bytes (each uint256 is 32 bytes)
+            let memPtr := mload(0x40)
+            array := memPtr
+            
+            // Store the length of the array
+            mstore(memPtr, size)
+            
+            // Update free memory pointer
+            mstore(0x40, add(memPtr, add(0x20, mul(size, 0x20))))
+            
+            // Initialize array elements
+            let dataPtr := add(memPtr, 0x20)
+            for { let i := 0 } lt(i, size) { i := add(i, 1) } {
+                mstore(dataPtr, value)
+                dataPtr := add(dataPtr, 0x20)
+            }
         }
     }
 
@@ -23,7 +39,26 @@ contract MemoryLayout {
         bytes1 value
     ) public pure returns (bytes memory array) {
         assembly {
+            // Allocate memory for the array
+            // Array length (32 bytes) + size bytes + padding to 32-byte boundary
+            let memPtr := mload(0x40)
+            array := memPtr
             
+            // Store the length of the array
+            mstore(memPtr, size)
+            
+            // Calculate total size (rounded up to nearest 32 bytes)
+            let totalSize := add(0x20, mul(div(add(size, 31), 32), 32))
+            
+            // Update free memory pointer
+            mstore(0x40, add(memPtr, totalSize))
+            
+            // Initialize array elements
+            let dataPtr := add(memPtr, 0x20)
+            for { let i := 0 } lt(i, size) { i := add(i, 1) } {
+                mstore8(dataPtr, value)
+                dataPtr := add(dataPtr, 1)
+            }
         }
     }
 }
