@@ -15,6 +15,16 @@
             "value": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         },
         "createBytesArray": {
+            "size": 5,
+            "value": 255
+        }
+    },
+    {
+        "createUint256Array": {
+            "size": 0,
+            "value": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        },
+        "createBytesArray": {
             "size": 0,
             "value": 255
         }

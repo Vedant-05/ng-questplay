@@ -34,28 +34,26 @@ contract MemoryLayout {
         bytes1 value
     ) public pure returns (bytes memory array) {
         assembly {
-           // Allocate memory
-            array := mload(0x40)
-            
-            // Store length
-            mstore(array, size)
-            
-            // Calculate words to allocate (round up)
-            let words := div(add(size, 31), 32)
-            
-            // Initialize array elements and pad with zeros
-            let dataPtr := add(array, 0x20)
-            for { let i := 0 } lt(i, words) { i := add(i, 1) } {
-                mstore(add(dataPtr, mul(i, 0x20)), 0)
-            }
-            
-            // Fill with actual data
-            for { let i := 0 } lt(i, size) { i := add(i, 1) } {
-                mstore8(add(dataPtr, i), value)
-            }
-            
-            // Update free memory pointer
-            mstore(0x40, add(array, add(0x20, mul(words, 0x20))))
+     
+// Allocate memory and log
+    array := mload(0x40)
+    mstore(0x40, add(array, 0x60)) // Log after allocating
+
+    // Check if memory properly allocated
+       if iszero(array) { revert(0, 0) }
+        // Set data pointer after the length
+        let dataPtr := add(array, 0x20)
+        
+        // Initialize array elements
+        for { let i := 0 } lt(i, size) { i := add(i, 1) } {
+            mstore8(dataPtr, value)
+            dataPtr := add(dataPtr, 1)
+        }
+
+       let totalSize := add(0x20, mul(0x20, div(add(size, 31), 32)))
+       mstore(0x40, add(array, totalSize))
+
+    
         }
     }
 }
