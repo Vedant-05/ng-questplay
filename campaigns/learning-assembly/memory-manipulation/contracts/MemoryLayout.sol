@@ -38,15 +38,18 @@ contract MemoryLayout {
             array := mload(0x40)
             // 2. Record the length of the array
             mstore(array, size)
+
             // 3. Initialize next `size` bytes with `value`
-            let offset := 0x20
+            let dataPtr := add(array, 0x20) // Skip length field
             for { let i := 0 } lt(i, size) { i := add(i, 1) } {
-                mstore8(add(array, add(offset, i)), value)
+                mstore8(add(dataPtr, i), value)
             }
-            // 4. Mark the array memory area as allocated
-            // Round up to the nearest multiple of 32 bytes
+
+            // 4. Calculate the number of words needed to store the bytes array
+            // Round up to the nearest 32-byte word boundary
             let words := div(add(size, 31), 32)
-            mstore(0x40, add(array, add(mul(words, 0x20), 0x20)))
+            // 5. Mark the array memory area as allocated
+            mstore(0x40, add(dataPtr, mul(words, 0x20)))
         }
     }
 }
